@@ -163,7 +163,7 @@ function render(el, params, state) {
           .filter(r => fx.isNum(r[2])).map(r => [r[0], { v: r[1], html: fx.isNum(r[1]) ? Number(r[1]).toLocaleString() : '—' }, { v: r[2], html: fx.num(r[2], 4) }, { v: r[3], html: fx.num(r[3], 4) }]), { compact: true }) +
         (fx.isNum(wp.mean_abs_diff) ? '<div class="pg-note">Mean absolute difference between the two numbers: ' + fx.num(100 * wp.mean_abs_diff, 1) + ' percentage points.</div>' : '');
     } else document.getElementById('cal-wp').innerHTML = fx.muted('The win-probability comparison is not in this backtest file yet.');
-    const zr = fx.rowsOf(shots).map(r => Object.assign({ zone: r.zone || r._key }, r));
+    const zr = fx.rowsOf(shots.by_zone || shots).map(r => Object.assign({ zone: r.zone || r._key }, r));
     document.getElementById('cal-shots').innerHTML = zr.length ? HW.tableHTML([{ label: 'Zone' }, { label: 'Shots', align: 'right' }, { label: 'FG%', align: 'right' }, { label: 'Model', align: 'right' }, { label: 'Gap', align: 'right' }, { label: 'z', align: 'right', title: 'Gap over its binomial standard error' }, { label: 'Brier', align: 'right' }],
       zr.map(r => [{ v: r.zone, html: fx.esc(fx.ZONE_LABEL[r.zone] || r.zone) }, { v: r.n, html: fx.isNum(r.n) ? Number(r.n).toLocaleString() : '—' }, { v: r.fg, html: fx.fmtV(r.fg, 'pct') }, { v: r.p_mean, html: fx.fmtV(r.p_mean, 'pct') },
         { v: r.diff, html: fx.signed(100 * (r.diff || 0), 1) + ' pts' }, { v: r.z, html: '<span class="' + (Math.abs(r.z) > 2 ? 'pg-edge-neg' : '') + '">' + fx.num(r.z, 1) + '</span>' }, { v: r.brier, html: fx.num(r.brier, 4) }]), { compact: true })
