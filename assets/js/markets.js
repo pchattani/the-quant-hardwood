@@ -143,7 +143,7 @@ function render(el, params) {
         return [{ v: HW.teamName(L, t), html: HW.teamLink(L, t) }, { v: w.line, html: HW.num(w.line, 1) }, { v: s.exp_w, html: HW.num(s.exp_w, 1) },
           { v: pm, html: HW.isNum(pm) ? HW.pct(pm, 0) : '—' }, { v: pk, html: HW.isNum(pk) ? HW.pct(pk, 0) : '—' },
           pre ? { v: null, html: '<span class="muted-inline">hidden</span>' } : { v: HW.isNum(pm) && HW.isNum(pk) ? pm - pk : null, html: HW.edgeHTML(pm, pk) }];
-      }), { compact: true }) + (pre ? '<div class="section-note">Edges are hidden in the preseason: the preseason ratings carry last season forward and do not yet account for summer roster moves, so model-against-market gaps would mostly measure that. They appear once games are played.</div>' : '');
+      }), { compact: true }) + (pre ? '<div class="section-note">Edges are hidden in the preseason: the preseason ratings blend last season with the current rosters, but they cannot yet rate rookies (who count at replacement level) and the player-impact values behind them are noisy, so model-against-market gaps would mostly measure that. They appear once games are played.</div>' : '');
       tabs.push({ key: 'wins', label: 'Win totals', sub: 'over/under season wins' });
     }
     html += HW.card('Futures', 'model against the de-vigged market', '<div class="toggle-row" id="mk-tabs">' + HW.toggles(tabs, tabs[0].key, 'data-mk') + '</div><div class="section-note" id="mk-sub"></div><div id="mk-panel"></div>');

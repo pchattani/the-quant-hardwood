@@ -59,9 +59,10 @@ function render(el, params, state) {
       if (!CUR || keys.indexOf(CUR) < 0) CUR = keys[0];
       if (params.rest && params.rest[0] && keys.indexOf(params.rest[0]) >= 0) CUR = params.rest[0];
       const fav = k => { const M = aw[k].model || {}; const ids = Object.keys(M).sort((a, b) => fx.pOf(M[b]) - fx.pOf(M[a])); return ids[0] ? [ids[0], fx.pOf(M[ids[0]])] : null; };
+      const won = k => { const W = aw[k].winner; return W && (W.names || []).length ? 'Won: ' + W.names.join(' / ') : ''; };
       el.innerHTML = '<div class="card"><div class="card-header">Award races ' + fx.esc(fx.seasonLabel(L, S)) + ' <span class="card-sub">The model\'s probability of winning each award, projected to the end of the season, against the prediction markets. Click a race.</span></div>' +
         '<div class="hf-races">' + keys.map(k => { const f = fav(k); const n = f ? ((P[f[0]] || {}).name || ((aw[k].features || {})[f[0]] || {}).name || fx.playerName(L, f[0])) : '—';
-          return '<button type="button" class="hf-race' + (k === CUR ? ' on' : '') + '" data-k="' + fx.esc(k) + '"><span class="hf-race-k">' + fx.esc(fx.awardName(k, L)) + '</span><span class="hf-race-n">' + fx.esc(n) + '</span><span class="hf-race-p">' + (f ? fx.pct(f[1]) : '') + '</span></button>'; }).join('') + '</div></div>' +
+          return '<button type="button" class="hf-race' + (k === CUR ? ' on' : '') + '" data-k="' + fx.esc(k) + '"><span class="hf-race-k">' + fx.esc(fx.awardName(k, L)) + '</span><span class="hf-race-n">' + fx.esc(n) + '</span><span class="hf-race-p">' + (f ? fx.pct(f[1]) : '') + '</span>' + (won(k) ? '<span class="hf-race-k">' + fx.esc(won(k)) + '</span>' : '') + '</button>'; }).join('') + '</div></div>' +
         '<div id="aw-body"></div>';
       el.querySelectorAll('.hf-race').forEach(b => b.addEventListener('click', () => { CUR = b.dataset.k; el.querySelectorAll('.hf-race').forEach(x => x.classList.toggle('on', x === b)); drawRace(L, S, CUR, aw[CUR], P, aw); }));
       drawRace(L, S, CUR, aw[CUR], P, aw);
@@ -83,8 +84,13 @@ function drawRace(L, S, key, A, P, aw) {
   const model = A.fit || (aw.models || {})[key] || null;
   const T3 = A.p_top3 || {};
   const top3 = id => (fx.isNum(T3[id]) ? T3[id] : (M[id] || {}).p_top3);
+  const W = A.winner || null, wonIds = new Set(((W || {}).ids || []).filter(Boolean));
+  const winLine = W && (W.names || []).length ? '<div class="mk-line"><strong>Winner</strong>: ' + W.names.map((n, i) => {
+    const id = (W.ids || [])[i];
+    return (id ? fx.playerLink(L, id, n, team(id)) : fx.esc(n)) + (id && fx.isNum(fx.pOf(M[id])) ? ' (model ' + fx.pct(fx.pOf(M[id])) + ')' : id ? '' : ' (not in the model\'s pool)');
+  }).join(' and ') + '. The model\'s race below is computed from the whole season, for comparison with the announced result.</div>' : '';
   let h = '<div class="card"><div class="card-header">' + fx.esc(((aw.labels || {})[key]) || fx.awardName(key, L)) + ' <span class="card-sub">' + fx.esc(WHY[key] || '') + '</span></div>' +
-    '<div id="aw-chart" style="height:' + Math.max(260, 26 * Math.min(14, ids.length) + 70) + 'px"></div>' +
+    winLine + '<div id="aw-chart" style="height:' + Math.max(260, 26 * Math.min(14, ids.length) + 70) + 'px"></div>' +
     '<div class="mk-line">' + (mkOn ? '<strong>Market</strong>: ' + (mk.sources || []).map(s => '<span class="mk-src">' + fx.esc(s) + '</span>').join('') + ' de-vigged mid prices' + (fx.isNum(mk.implied_total) ? ' (raw book total ' + fx.pct(mk.implied_total, 0) + ')' : '') + '.' : '<strong>Market</strong>: no two-sided market for this award at the moment.') +
     (rule ? ' <strong>65-game rule</strong>: from 2023-24 the NBA requires 65 qualifying games (20+ minutes; two games of 15-20 minutes also count) for this award; the model removes players who cannot reach it and simulates the rest.' : '') + '</div></div>';
   h += '<div class="card"><div class="card-header">Candidates <span class="card-sub">Everyone in the pool, by model probability. Features are the raw season figures the model standardises within the pool.</span></div><div id="aw-table"></div>' +
@@ -106,7 +112,7 @@ function drawRace(L, S, key, A, P, aw) {
     const m = M[id], p = fx.pOf(m), q = mkOn ? marketP(mk, id, name(id)) : null;
     const el = E[id], f = F[id] || {};
     const elig = el === false || (m && m.can_qualify === false) ? '<span class="pg-tag bad">out</span>' : rule && m && fx.isNum(m.p_eligible) && m.p_eligible < 0.999 ? '<span class="pg-tag warn">' + fx.pct(m.p_eligible, 0) + '</span>' : '<span class="pg-tag good">yes</span>';
-    const cells = [i + 1, { v: name(id), html: fx.playerLink(L, id, name(id), team(id)) }, { v: fx.teamAbbr(L, team(id)), html: team(id) ? fx.teamLink(L, team(id), { abbr: true }) : '—' }, { v: p, html: '<strong>' + fx.pct(p) + '</strong>' }];
+    const cells = [i + 1, { v: name(id), html: fx.playerLink(L, id, name(id), team(id)) + (wonIds.has(id) ? ' <span class="pg-tag good">winner</span>' : '') },{ v: fx.teamAbbr(L, team(id)), html: team(id) ? fx.teamLink(L, team(id), { abbr: true }) : '—' }, { v: p, html: '<strong>' + fx.pct(p) + '</strong>' }];
     if (ids.some(x => fx.isNum(top3(x)))) cells.push({ v: top3(id), html: fx.pct(top3(id), 0) });
     if (mkOn) cells.push({ v: q, html: fx.pct(q) }, { v: fx.isNum(p) && fx.isNum(q) ? p - q : null, html: fx.isNum(p) && fx.isNum(q) ? '<span class="' + (p > q ? 'pg-edge-pos' : 'pg-edge-neg') + '">' + fx.signed(100 * (p - q), 1) + '</span>' : '—' });
     cells.push({ v: el === false ? 0 : 1, html: elig });
