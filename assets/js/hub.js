@@ -118,7 +118,11 @@ function explore(L) {
   return '<div class="hub-links pad">' + links.map(l => '<a href="' + (l[0].indexOf('season/') === 0 ? '#/' + L + '/' + l[0] : HW.href(L, l[0])) + '"><b>' + esc(l[1]) + '</b><span>' + esc(l[2]) + '</span></a>').join('') +
     '<a href="#/methodology"><b>Methodology</b><span>How the models work</span></a>' +
     '<a href="' + HW.FOOTBALL_URL + '"><b>⚽ The Quant Footballer</b><span>The sister site for football</span></a>' +
-    '<a href="' + HW.PADDOCK_URL + '"><b>🏁 The Quant Paddock</b><span>The sister site for Formula 1</span></a></div>';
+    '<a href="' + HW.PADDOCK_URL + '"><b>🏁 The Quant Paddock</b><span>The sister site for Formula 1</span></a>' +
+    '<a href="' + HW.ACE_URL + '"><b>🎾 The Quant Ace</b><span>The sister site for ATP and WTA tennis</span></a>' +
+    '<a href="' + HW.BULLPEN_URL + '"><b>⚾ The Quant Bullpen</b><span>The sister site for MLB</span></a>' +
+    '<a href="' + HW.GRIDIRON_URL + '"><b>🏈 The Quant Gridiron</b><span>The sister site for the NFL</span></a>' +
+    '<a href="' + HW.RINK_URL + '"><b>🏒 The Quant Rink</b><span>The sister site for the NHL</span></a></div>';
 }
 
 function render(el, params) {
