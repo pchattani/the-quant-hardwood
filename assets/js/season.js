@@ -175,7 +175,7 @@ function winTotalsTable(L, season, sim) {
     ], _class: 'wt-row', _style: '' };
   }).sort((a, b) => (b.cells[1].v || 0) - (a.cells[1].v || 0));
   return HW.tableHTML([{ label: 'Team' }, { label: 'Proj W', align: 'right' }, { label: '90% range', align: 'right' }, { label: 'Line', align: 'right' },
-    { label: 'Over (model)', align: 'right' }, { label: 'Over (market)', align: 'right' }, { label: 'Edge', align: 'right', title: 'Model minus market, percentage points' }], rows, { compact: true }) + (pre ? '<div class="section-note">Edges are hidden in the preseason: the preseason ratings carry last season forward (a roster-aware prior exists but is switched off: it widened the gap to the market), so model-against-market gaps would mostly measure summer moves. They appear once games are played.</div>' : '');
+    { label: 'Over (model)', align: 'right' }, { label: 'Over (market)', align: 'right' }, { label: 'Edge', align: 'right', title: 'Model minus market, percentage points' }], rows, { compact: true }) + (pre ? '<div class="section-note">Edges are hidden in the preseason: the preseason ratings are last season carried forward plus a roster term that counts rookies at replacement level, so model-against-market gaps would partly measure what that term misses. They appear once games are played.</div>' : '');
 }
 
 function scheduleTable(L, season) {
