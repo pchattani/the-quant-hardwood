@@ -31,6 +31,7 @@ function render(el, params, state) {
   return fx.ready().then(() => {
     const S = fx.S(params, state, L);
     const q = (params && params.query) || {};
+    if (ST.key !== L + S) { ST.key = L + S; ST.team = 'all'; ST.min = null; }
     ['pos', 'team', 'min', 'q', 'n'].forEach(k => { if (q[k] !== undefined && q[k] !== '') ST[k] = q[k]; });
     return HW.load(fx.path(L, S, 'value.json')).then(v => {
       if (!fx.alive(el)) return null;
@@ -63,6 +64,7 @@ function draw(el, L, S, v, asked) {
       (best[k] || []).map((id, i) => { const r = byId[id] || {}; return { _href: fx.playerHref(L, id, S), cells: [i + 1, { v: r.name, html: fx.playerLink(L, id, r.name) + ' <span class="muted-inline">' + fx.esc(fx.teamAbbr(L, r.team)) + '</span><div class="vl-why">' + why(fx, r) + '</div>' }, { v: r.war, html: '<strong>' + fx.num(r.war, 1) + '</strong>' }, { v: r.hpm, html: fx.signed(r.hpm, 1) }, { v: r.pct, html: fx.pill(r.pct) }] }; }), { compact: true }) + '</div>').join('') + '</div></div>';
   const teams = Array.from(new Set(rows.map(r => r.team).filter(Boolean))).sort((a, b) => String(tName(a)).localeCompare(String(tName(b))));
   const maxMin = Math.max.apply(null, rows.map(r => r.min || 0).concat([100]));
+  if (teams.indexOf(ST.team) < 0) ST.team = 'all';
   if (ST.min === null || !fx.isNum(ST.min)) ST.min = fx.isNum(v.min_floor) ? Math.round(v.min_floor) : 0;
   h += '<div class="card"><div class="card-header">Leaderboard <span class="card-sub" id="vl-sub"></span></div>' +
     '<div class="lab-controls hf-controls vl-ctl">' +

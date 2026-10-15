@@ -208,3 +208,37 @@ html, body { overflow-x: hidden; }
 @media (max-width: 420px) {
   .sister-group { display: none; }
 }
+
+/* ── Value (value.js), trade simulator (trade.js), strengths and needs (teams.js) ─── */
+.vl-best-h, .nd-h { font-size: 0.74rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text2); margin: 10px 0 6px; }
+.vl-best { padding: 0 14px 12px; }
+.vl-why { font-size: 0.72rem; color: var(--text3); line-height: 1.3; margin-top: 2px; white-space: normal; }
+.vl-ctl label, .tr-pick label { flex-wrap: wrap; }
+.vl-ctl select, .tr-pick select { max-width: 220px; }
+.tr-pick .lab-controls { align-items: center; }
+tr.tr-sel td { background: rgba(240, 136, 62, 0.14); }
+.tr-io { display: grid; gap: 4px; font-size: 0.84rem; margin-bottom: 10px; }
+.tr-kpi { margin: 8px 0 10px; }
+.tr-depth { font-size: 0.8rem; display: grid; gap: 4px; margin: 10px 0; }
+.tr-rot summary { cursor: pointer; font-size: 0.8rem; color: var(--text2); margin: 6px 0; }
+.tr-verdict strong { color: var(--text); }
+.nd-top { padding: 0 14px; }
+.nd-list { min-width: 0; }
+.nd-item { font-size: 0.84rem; margin: 4px 0 8px; line-height: 1.4; }
+.nd-ways { padding: 0 14px 8px; }
+.nd-hints { font-size: 0.74rem; color: var(--text2); white-space: normal; }
+.nd-tgs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.nd-tg { border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-size: 0.82rem; min-width: 0; }
+.nd-tg.nd-att { box-shadow: inset 3px 0 0 var(--green); }
+.nd-tg-h { line-height: 1.4; }
+.nd-tg-v { margin: 4px 0 2px; }
+.nd-tg-a { margin-top: 4px; font-size: 0.78rem; }
+@media (max-width: 760px) { .nd-tgs { grid-template-columns: 1fr; } }
+.nd-grade { display: inline-block; min-width: 22px; padding: 1px 6px; border-radius: 4px; font-weight: 700; font-size: 0.78rem; text-align: center; color: #0d1117; }
+.nd-a { background: #3fb950; } .nd-b { background: #39d0d8; } .nd-c { background: #8b949e; } .nd-d { background: #f0883e; } .nd-f { background: #f85149; }
+#tp-needs .pg-note, #tr-out .pg-note { padding: 8px 14px 12px; }
+@media (max-width: 640px) {
+  .vl-best { padding: 0 8px 8px; }
+  .nd-top, .nd-ways { padding: 0 8px; }
+  .tr-kpi { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
