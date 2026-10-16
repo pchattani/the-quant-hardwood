@@ -59,6 +59,7 @@ function draw(el, L, S, v, asked) {
   const best = v.best || {};
   h += '<div class="kpi-grid">' + [fx.tile('Most WAR', top[0] ? fx.esc(top[0].name) : '—', top[0] ? fx.num(top[0].war, 1) + ' WAR · ' + fx.esc(fx.teamAbbr(L, top[0].team)) + ' · HPM ' + fx.signed(top[0].hpm, 1) : '')]
     .concat(['G', 'W', 'B'].map(k => { const r = byId[(best[k] || [])[0]]; return fx.tile('Best ' + (ROLE_ONE[k] || k).toLowerCase(), r ? fx.esc(r.name) : '—', r ? fx.num(r.war, 1) + ' WAR · ' + fx.esc(fx.teamAbbr(L, r.team)) : ''); })).join('') + '</div></div>';
+  h += '<div id="vl-v2"></div>';
   h += '<div class="card"><div class="card-header">Best at each position <span class="card-sub">Qualified players (' + fx.num(v.n_qualified, 0) + '; ' + (fx.isNum(v.min_floor) ? fx.num(v.min_floor, 0) + '+ minutes' : 'the minutes floor') + '). ESPN lists only G, F and C, so forwards are split into wings and bigs by box profile (rebounds, blocks, rim attempts against threes and assists). "Why" gives the offence and defence split of HPM and the player\'s best box skills (league percentile).</span></div><div class="grid-3 vl-best">' +
     ['G', 'W', 'B'].map(k => '<div><div class="vl-best-h">' + fx.esc(roles[k] || ROLE[k]) + '</div>' + HW.tableHTML([{ label: '#', align: 'right' }, { label: 'Player' }, { label: 'WAR', align: 'right' }, { label: 'HPM', align: 'right' }, { label: 'Pct', align: 'center', title: 'WAR percentile among qualified players' }],
       (best[k] || []).map((id, i) => { const r = byId[id] || {}; return { _href: fx.playerHref(L, id, S), cells: [i + 1, { v: r.name, html: fx.playerLink(L, id, r.name) + ' <span class="muted-inline">' + fx.esc(fx.teamAbbr(L, r.team)) + '</span><div class="vl-why">' + why(fx, r) + '</div>' }, { v: r.war, html: '<strong>' + fx.num(r.war, 1) + '</strong>' }, { v: r.hpm, html: fx.signed(r.hpm, 1) }, { v: r.pct, html: fx.pill(r.pct) }] }; }), { compact: true }) + '</div>').join('') + '</div></div>';
@@ -88,6 +89,7 @@ function draw(el, L, S, v, asked) {
   $('vl-min').onchange = redraw;
   drawTable(L, S, rows);
   HW.sortable(el);
+  valuation(L);
   const col = { G: '#58a6ff', W: '#f0883e', B: '#3fb950' };
   const q = rows.filter(r => r.q && fx.isNum(r.hpm));
   fx.plot('vl-chart', ['G', 'W', 'B'].map(k => { const s = q.filter(r => r.role === k); return { type: 'scatter', mode: 'markers', name: roles[k] || ROLE[k], x: s.map(r => r.min), y: s.map(r => r.hpm),
@@ -127,6 +129,56 @@ function syncUrl(L, S, asked) {
     const qs = Object.keys(q).map(k => encodeURIComponent(k) + '=' + encodeURIComponent(q[k])).join('&');
     history.replaceState(null, '', '#/' + L + '/value' + (qs ? '?' + qs : ''));
   } catch (e) { /* history unavailable */ }
+}
+
+// ── valuation v2 (data/<L>/<current>/valuation.json, analytics/valuation.py) ────────────────
+const V2 = { role: 'all', sort: 'v', n: '50' };
+function valuation(L) {
+  const fx = FX();
+  const C = fx.current(L);
+  const box = document.getElementById('vl-v2');
+  if (!box || !C) return;
+  HW.load(fx.path(L, C, 'valuation.json')).then(v => {
+    if (!box.isConnected) return;
+    if (!fx.ok(v) || !v.rows) { box.innerHTML = fx.card('Valuation over four seasons', '', '<div class="pad">' + fx.notBuilt('Valuation v2', v) + '</div>'); return; }
+    const rows = rowsOf(v);
+    const k = v.constants || {}, f = v.fit || {}, sp = f.spread || {}, pos = v.positions || {};
+    const si = f.surv_info || {};
+    let h = '<div class="card"><div class="card-header">Valuation over four seasons ' + fx.esc(fx.seasonLabel(L, C)) + ' <span class="card-sub">Every rostered player\'s projected value over ' + fx.esc((v.slots || []).join(', ')) +
+      ', in WAR discounted ' + fx.num(k.discount, 2) + ' a season: today\'s rest-of-season rate (HPM), aged each season along the fitted ageing curve, times depth-chart minutes, availability (games played over two seasons, regressed) and the chance he is still playing (fitted on our seasons by age, rate and minutes); future seasons floored at replacement. The band (10th to 90th percentile) is a Monte Carlo over the rate (one-season-ahead spread ' + fx.num(sp.s1, 2) + ' per 100, drift ' + fx.num(sp.tau, 2) + ' a season), minutes and survival. VORP measures from the replacement level of the player\'s own position. On-field value only: no salaries or contracts.</span></div>' +
+      '<div class="lab-controls hf-controls vl-ctl"><label>Position<select id="v2-role"><option value="all">All</option><option value="G">Guards</option><option value="W">Wings</option><option value="B">Bigs</option></select></label>' +
+      '<label>Sort<select id="v2-sort"><option value="v">Four-season value</option><option value="vorp">VORP at position</option><option value="w0">' + fx.esc((v.slots || [])[0] || 'Now') + '</option><option value="w1">' + fx.esc((v.slots || [])[1] || 'Next') + '</option><option value="p90">Upside (p90)</option></select></label>' +
+      '<label>Show<select id="v2-n"><option value="50">Top 50</option><option value="150">Top 150</option><option value="0">All</option></select></label></div><div id="v2-table"></div>' +
+      '<div class="pg-note">Ageing fitted on ' + fx.num((f.aging_info || {}).n_pairs, 0) + ' player-season pairs (500+ minutes in both); survival logistic log-loss ' + fx.num(si.logloss, 3) + ' against ' + fx.num(si.logloss_base, 3) + ' for the base rate (' + fx.num(si.n, 0) + ' player-seasons); league availability ' + fx.pct(f.avail, 0) + '. Ages from ESPN\'s athlete records.</div></div>';
+    h += '<div class="grid-2"><div class="card"><div class="card-header">Ageing curve <span class="card-sub">Change in HPM over the next season by age: fitted on our seasons (delta method) against the hand-set curve the impact model and roster prior use.</span></div><div id="v2-age" style="height:300px"></div></div>' +
+      '<div class="card"><div class="card-header">Position scarcity <span class="card-sub">Replacement level by position: the mean rate of each position\'s next tier of playing time after the league\'s rotations. Scarcity = league replacement (' + fx.signed(k.replacement, 1) + ') minus the position\'s level.</span></div>' +
+      HW.tableHTML([{ label: 'Position' }, { label: 'Replacement', align: 'right' }, { label: 'Scarcity', align: 'right' }, { label: 'Top-10 rate', align: 'right' }, { label: 'Rotation slots', align: 'right' }],
+        ['G', 'W', 'B'].map(r => { const x = pos[r] || {}; return [ROLE[r], { v: x.repl, html: fx.signed(x.repl, 2) }, { v: x.scarcity, html: fx.signed(x.scarcity, 2) }, { v: x.top10, html: fx.signed(x.top10, 2) }, x.slots]; }), { compact: true }) + '</div></div>';
+    box.innerHTML = h;
+    const $ = id => document.getElementById(id);
+    $('v2-role').value = V2.role; $('v2-sort').value = V2.sort; $('v2-n').value = V2.n;
+    const sl = v.slots || [];
+    const draw = () => {
+      let list = rows.filter(r => V2.role === 'all' || r.role === V2.role).sort((a, b) => (b[V2.sort] || 0) - (a[V2.sort] || 0));
+      if (Number(V2.n) > 0) list = list.slice(0, Number(V2.n));
+      $('v2-table').innerHTML = HW.tableHTML([{ label: '#', align: 'right' }, { label: 'Player' }, { label: 'Team' }, { label: 'Pos' }, { label: 'Age', align: 'right' }, { label: 'HPM', align: 'right', title: 'Rest-of-season rate per 100' },
+        { label: 'Min', align: 'right' }, { label: 'Avail', align: 'right' }].concat(sl.map(s => ({ label: s, align: 'right', title: 'WAR in this season slot (mean path)' })), [{ label: 'Value', align: 'right', title: 'Four-season WAR, discounted' }, { label: 'Band', align: 'center', title: '10th to 90th percentile' },
+        { label: 'Still playing', align: 'right', title: 'Chance he is still playing in the last slot' }, { label: 'VORP', align: 'right', title: 'Value over his position\'s replacement level' }]),
+        list.map((r, i) => ({ _href: fx.playerHref(L, r.id), cells: [i + 1, { v: r.name, html: fx.playerLink(L, r.id, r.name) + (r.inj ? ' <span class="chip red">' + fx.esc(String(r.inj).slice(0, 3)) + '</span>' : '') }, { v: fx.teamAbbr(L, r.team), html: fx.teamLink(L, r.team, { abbr: true }) },
+          ROLE_ONE[r.role] || r.role, { v: r.age, html: fx.num(r.age, 0) }, { v: r.rate, html: fx.signed(r.rate, 1) }, { v: r.mpg, html: fx.num(r.mpg, 0) }, { v: r.avail, html: fx.pct(r.avail, 0) }]
+          .concat(['w0', 'w1', 'w2', 'w3'].slice(0, sl.length).map(c => ({ v: r[c], html: fx.num(r[c], 1) })), [{ v: r.v, html: '<strong>' + fx.num(r.v, 1) + '</strong>' }, { v: r.p90 - r.p10, html: fx.num(r.p10, 0) + '–' + fx.num(r.p90, 0) },
+            { v: r.surv, html: fx.pct(r.surv, 0) }, { v: r.vorp, html: fx.num(r.vorp, 1) }]) })), { compact: true, sticky: true });
+      HW.sortable('v2-table');
+    };
+    $('v2-role').onchange = e => { V2.role = e.target.value; draw(); };
+    $('v2-sort').onchange = e => { V2.sort = e.target.value; draw(); };
+    $('v2-n').onchange = e => { V2.n = e.target.value; draw(); };
+    draw();
+    const ag = f.aging || [], hs = f.aging_handset || [];
+    fx.plot('v2-age', [{ type: 'scatter', mode: 'lines', name: 'Fitted', x: ag.map(a => a[0]), y: ag.map(a => a[1]), line: { color: '#f0883e', width: 3 } },
+      { type: 'scatter', mode: 'lines+markers', name: 'Hand-set (roster prior)', x: hs.map(a => a[0]), y: hs.map(a => a[1]), line: { color: '#6e7681', dash: 'dot' } }],
+    fx.layout({ margin: { l: 50, r: 10, t: 20, b: 45 }, legend: { orientation: 'h', y: 1.12, font: { size: 10 } }, xaxis: { title: 'Age' }, yaxis: { title: 'Change in HPM next season', zeroline: true, zerolinecolor: '#6e7681' } }));
+  });
 }
 
 HW.route('value', render);

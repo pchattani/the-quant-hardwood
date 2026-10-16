@@ -128,6 +128,7 @@ function drawTeam(el, L, S, tid, cat, teams, season) {
   ].join('') + '</div>';
   const curS = fx.current(L);
   h += '<div class="card"><div class="card-header">Strengths and needs <span class="card-sub">' + (Number(S) === Number(curS) ? 'Each position group and unit graded against the league on projected value (rest-of-season HPM × projected minutes, in WAR over a full season); the three strongest and weakest, with ranked trade targets for each weakness.' : 'Built for the current season (' + fx.esc(fx.seasonLabel(L, curS)) + ') only.') + '</span></div><div id="tp-needs">' + fx.muted(Number(S) === Number(curS) ? 'Loading…' : '<a href="' + fx.teamHref(L, tid, curS) + '">' + fx.esc(name) + ' in ' + fx.esc(fx.seasonLabel(L, curS)) + ' →</a>') + '</div></div>';
+  if (Number(S) === Number(curS)) h += '<div class="card"><div class="card-header">Ledger <span class="card-sub">This team\'s trades in the last 12 months, rated on four-season value (at the time, realised since, today\'s view), and every transaction ESPN lists.</span></div><div id="tp-ledger">' + fx.muted('Loading…') + '</div></div>';
   h += '<div class="card"><div class="card-header">Rating path <span class="card-sub">Net rating per 100 after each game from the Kalman filter, ±1 standard error shaded; dots are game results (green won, red lost).</span></div><div id="tp-path" style="height:320px"></div></div>';
   h += '<div class="grid-2"><div class="card"><div class="card-header">Four factors <span class="card-sub">Both ends, with league percentile and the league median.</span></div><div id="tp-ff"></div></div>' +
     '<div class="card"><div class="card-header">Odds against the market <span class="card-sub">Season simulation against prediction markets where they trade.</span></div><div id="tp-odds"></div></div></div>';
@@ -143,6 +144,7 @@ function drawTeam(el, L, S, tid, cat, teams, season) {
   h += '<div class="card"><div class="card-header">Percentiles <span class="card-sub">The whole team catalogue, ' + metrics.length + ' metrics, against the league this season.</span></div><div id="tp-pct"></div></div>';
   el.innerHTML = h;
   if (Number(S) === Number(curS)) HW.load(fx.path(L, S, 'needs/' + tid + '.json')).then(nd => { if (fx.alive(el)) drawNeeds(L, S, tid, nd); });
+  if (Number(S) === Number(curS) && HW.movesLedger) HW.movesLedger(document.getElementById('tp-ledger'), L, S, tid);
 
   // Rating path.
   const path = (((season || {}).rating_paths) || {})[tid] || [];

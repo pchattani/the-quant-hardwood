@@ -99,6 +99,8 @@ addRoute('player/:id', 'player');
 addRoute('players', 'players');
 addRoute('value', 'value');
 addRoute('trade', 'trade');
+addRoute('moves', 'moves');
+addRoute('fantasy', 'fantasy');
 addRoute('teams', 'teams');
 addRoute('leaders', 'leaders');
 addRoute('awards', 'awards');
@@ -126,13 +128,13 @@ const ALIASES = {
 
 const TITLES = {
   hub: 'Hub', season: 'Season', games: 'Games', game: 'Game centre', team: 'Team', player: 'Player',
-  players: 'Players', teams: 'Teams', value: 'Player value', trade: 'Trade simulator', leaders: 'Leaders', awards: 'Awards', playoffs: 'Playoffs', lab: 'Lab',
+  players: 'Players', teams: 'Teams', value: 'Player value', trade: 'Trade simulator', moves: 'Moves', fantasy: 'Fantasy', leaders: 'Leaders', awards: 'Awards', playoffs: 'Playoffs', lab: 'Lab',
   compare: 'Compare', 'compare-players': 'Compare players', 'compare-teams': 'Compare teams',
   markets: 'Markets', calibration: 'Calibration', glossary: 'Glossary', methodology: 'Methodology', disclaimer: 'Disclaimer & terms'
 };
 // Which top-nav link lights up for each route.
 const NAV_OF = { hub: 'hub', season: 'season', games: 'games', game: 'games', team: 'teams', teams: 'teams',
-  player: 'players', players: 'players', value: 'value', trade: 'trade', leaders: 'leaders', awards: 'awards', playoffs: 'playoffs', lab: 'lab',
+  player: 'players', players: 'players', value: 'value', trade: 'trade', moves: 'moves', fantasy: 'fantasy', leaders: 'leaders', awards: 'awards', playoffs: 'playoffs', lab: 'lab',
   compare: 'compare', 'compare-players': 'compare', 'compare-teams': 'compare', markets: 'markets',
   calibration: 'calibration', glossary: 'glossary', methodology: 'methodology' };
 // Where a page lands when the league is switched (id pages fall back to their list).
@@ -924,7 +926,7 @@ function updateHeader() {
     b.setAttribute('aria-pressed', b.dataset.league === L ? 'true' : 'false');
   });
   const links = { hub: '#/' + L, season: seasonHref(L, S), games: href(L, 'games', S), teams: href(L, 'teams', S),
-    players: href(L, 'players', S), value: href(L, 'value', S), trade: href(L, 'trade'), leaders: href(L, 'leaders', S), awards: href(L, 'awards', S), playoffs: href(L, 'playoffs', S),
+    players: href(L, 'players', S), value: href(L, 'value', S), trade: href(L, 'trade'), moves: href(L, 'moves'), fantasy: href(L, 'fantasy'), leaders: href(L, 'leaders', S), awards: href(L, 'awards', S), playoffs: href(L, 'playoffs', S),
     lab: href(L, 'lab', S), compare: href(L, 'compare', S), markets: href(L, 'markets', S), calibration: href(L, 'calibration'),
     glossary: '#/glossary', methodology: '#/methodology' };
   document.querySelectorAll('.global-nav a[data-nav]').forEach(a => { if (links[a.dataset.nav]) a.setAttribute('href', links[a.dataset.nav]); });

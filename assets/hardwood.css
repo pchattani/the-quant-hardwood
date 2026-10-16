@@ -242,3 +242,30 @@ tr.tr-sel td { background: rgba(240, 136, 62, 0.14); }
   .nd-top, .nd-ways { padding: 0 8px; }
   .tr-kpi { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* ── Moves (moves.js), fantasy (fantasy.js), valuation v2 (value.js) ─── */
+.mv-deal { border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; margin: 0 0 10px; font-size: 0.84rem; min-width: 0; }
+.mv-deal-h { margin-bottom: 6px; line-height: 1.5; }
+.mv-sides { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.mv-side { min-width: 0; line-height: 1.45; }
+.mv-side.mv-focus { box-shadow: inset 3px 0 0 var(--orange, #f0883e); padding-left: 8px; }
+.mv-io { margin-top: 3px; overflow-wrap: anywhere; }
+.mv-pick { color: var(--text2); }
+.mv-text { font-size: 0.78rem; color: var(--text2); display: grid; gap: 4px; overflow-wrap: anywhere; }
+.mv-txt { white-space: normal; overflow-wrap: anywhere; }
+.mv-ledger { padding: 0 14px 8px; }
+.fn-ctl label { flex-wrap: wrap; }
+.fn-punts, .fn-weights { padding: 0 14px 8px; font-size: 0.8rem; display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; }
+.fn-chk { white-space: nowrap; }
+.fn-wt { white-space: nowrap; }
+.fn-wt input { width: 58px; }
+.fn-picks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 14px; padding: 0 14px 10px; }
+.fn-pick { min-width: 0; }
+.fn-pick ol { margin: 0; padding-left: 18px; font-size: 0.82rem; }
+.fn-pick li { margin-bottom: 4px; }
+tr.fn-tier-alt td { background: rgba(110, 118, 129, 0.08); }
+@media (max-width: 900px) { .fn-picks { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) {
+  .mv-sides, .fn-picks { grid-template-columns: 1fr; }
+  .fn-punts, .fn-weights, .fn-picks, .mv-ledger { padding-left: 8px; padding-right: 8px; }
+}
